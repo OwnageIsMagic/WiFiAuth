@@ -7,6 +7,7 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -23,14 +24,14 @@ public class WifiReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         /** This method is called when the BroadcastReceiver is receiving an Intent broadcast.**/
-        //String ssid="";
+        String ssid = "";
         NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
         if (info != null) {
             if (info.isConnected()) {
 
                 WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
                 WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-                //ssid = wifiInfo.getSSID();
+                ssid = wifiInfo.getSSID();
                 if (wifiInfo.getSSID().equals("MGUPI-WiFi")) {
                     Thread thread = new Thread(new Runnable() {
                         @Override
@@ -46,7 +47,7 @@ public class WifiReceiver extends BroadcastReceiver {
                 }
             }
         }
-        //Toast.makeText(context, ssid + "\n" + info.toString(), Toast.LENGTH_LONG).show();
+        Toast.makeText(context, ssid + "\n" + info.toString(), Toast.LENGTH_LONG).show();
     }
 
     private void start() throws IOException {
