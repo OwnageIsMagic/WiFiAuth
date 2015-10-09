@@ -18,21 +18,18 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class WifiReceiver extends BroadcastReceiver {
-    public WifiReceiver() {
-    }
-	
-	boolean authorized;
-	NetworkInfo info;
-	WifiManager wifiManager;
+    boolean authorized;
+    NetworkInfo info;
+    WifiManager wifiManager;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         /** This method is called when the BroadcastReceiver is receiving an Intent broadcast.**/
-       // String ssid = "";
-	   authorized = false;
+        // String ssid = "";
+        authorized = false;
         info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
         if (info != null) {
-            if (info.isConnected()) {
+            if (info.isConnectedOrConnecting()) {
                 wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
                 WifiInfo wifiInfo = wifiManager.getConnectionInfo();
                 //ssid = wifiInfo.getSSID();
@@ -48,20 +45,20 @@ public class WifiReceiver extends BroadcastReceiver {
                         }
                     });
                     thread.start();
-					authorized = true;
-					//wifiManager.reconnect();
+                    authorized = true;
+                    //wifiManager.reconnect();
                 }
             }
-		//if (info.getDetailedState() == NetworkInfo.DetailedState.DISCONNECTED) wifiManager.reconnect();
-		}
-		if (authorized)
-        Toast.makeText(context, "Authorized", Toast.LENGTH_LONG).show();
-		Toast.makeText(context, info.toString(), Toast.LENGTH_LONG).show();
+            //if (info.getDetailedState() == NetworkInfo.DetailedState.DISCONNECTED) wifiManager.reconnect();
+            if (authorized)
+                Toast.makeText(context, "Authorized", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, intent.toString(), Toast.LENGTH_LONG).show();
+        }
     }
 
     private void auth(String request, String urlParameters) throws IOException {
-		Log.d("WiFiAuth", "auth()");
-        
+        Log.d("WiFiAuth", "auth()");
+
         byte[] postData = urlParameters.getBytes("UTF-8");
         URL url = new URL(request);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -91,4 +88,7 @@ public class WifiReceiver extends BroadcastReceiver {
         in.close();
         conn.disconnect();
     }
+
+//    public WifiReceiver() {
+//    }
 }
