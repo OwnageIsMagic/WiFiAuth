@@ -20,41 +20,49 @@ import java.net.URL;
 public class WifiReceiver extends BroadcastReceiver {
     public WifiReceiver() {
     }
+	
+	boolean authorized;
+	NetworkInfo info;
+	WifiManager wifiManager;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         /** This method is called when the BroadcastReceiver is receiving an Intent broadcast.**/
-        String ssid = "";
-        NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+       // String ssid = "";
+	   authorized = false;
+        info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
         if (info != null) {
             if (info.isConnected()) {
-
-                WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+                wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
                 WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-                ssid = wifiInfo.getSSID();
-                if (wifiInfo.getSSID().equals("MGUPI-WiFi")) {
+                //ssid = wifiInfo.getSSID();
+                if (wifiInfo.getSSID().equals("\"MGUPI-WiFi\"")) {
                     Thread thread = new Thread(new Runnable() {
                         @Override
                         public void run() {
                             try {
-                                start();
+                                auth("http://1.1.1.10/login.html", "buttonClicked=4");
                             } catch (IOException e) {
-                                Log.e("MyTAG", "IOError", e);
+                                Log.e("WiFiAuth", "IOError", e);
                             }
                         }
                     });
                     thread.start();
+					authorized = true;
+					//wifiManager.reconnect();
                 }
             }
-        }
-        Toast.makeText(context, ssid + "\n" + info.toString(), Toast.LENGTH_LONG).show();
+		//if (info.getDetailedState() == NetworkInfo.DetailedState.DISCONNECTED) wifiManager.reconnect();
+		}
+		if (authorized)
+        Toast.makeText(context, "Authorized", Toast.LENGTH_LONG).show();
+		Toast.makeText(context, info.toString(), Toast.LENGTH_LONG).show();
     }
 
-    private void start() throws IOException {
-        String urlParameters = "buttonClicked=4";
+    private void auth(String request, String urlParameters) throws IOException {
+		Log.d("WiFiAuth", "auth()");
+        
         byte[] postData = urlParameters.getBytes("UTF-8");
-        String request = "http://1.1.1.10/login.html";
-
         URL url = new URL(request);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
