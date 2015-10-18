@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.NetworkInfo;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -30,29 +29,31 @@ public class WifiReceiver extends BroadcastReceiver {
         info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
         if (info != null) {
             if (info.isConnectedOrConnecting()) {
-                wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-                WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+                //wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+                //WifiInfo wifiInfo = wifiManager.getConnectionInfo();
                 //ssid = wifiInfo.getSSID();
-                if (wifiInfo.getSSID().equals("\"MGUPI-WiFi\"")) {
-                    Thread thread = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                auth("http://1.1.1.10/login.html", "buttonClicked=4");
-                            } catch (IOException e) {
-                                Log.e("WiFiAuth", "IOError", e);
+                if (info.getExtraInfo().equals("\"MGUPI-WiFi\"")) { //MGTS_GPON_1504  MGUPI-WiFi
+                    if (info.getDetailedState().equals(NetworkInfo.DetailedState.CONNECTED)) {
+                        Thread thread = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    auth("http://1.1.1.10/login.html", "buttonClicked=4");
+                                } catch (IOException e) {
+                                    Log.e("WiFiAuth", "IOError\n" + e);
+                                }
                             }
-                        }
-                    });
-                    thread.start();
-                    authorized = true;
-                    //wifiManager.reconnect();
+                        });
+                        thread.start();
+                        authorized = true;
+                        //wifiManager.reconnect();
+                    }
                 }
             }
             //if (info.getDetailedState() == NetworkInfo.DetailedState.DISCONNECTED) wifiManager.reconnect();
             if (authorized)
                 Toast.makeText(context, "Authorized", Toast.LENGTH_LONG).show();
-            Toast.makeText(context, intent.toString(), Toast.LENGTH_LONG).show();
+            //Toast.makeText(context, info.toString(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -60,6 +61,7 @@ public class WifiReceiver extends BroadcastReceiver {
         Log.d("WiFiAuth", "auth()");
 
         byte[] postData = urlParameters.getBytes("UTF-8");
+        System.setProperty("http.keepAlive", "false");
         URL url = new URL(request);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
